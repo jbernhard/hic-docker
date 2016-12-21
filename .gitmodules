@@ -1,0 +1,15 @@
+[submodule "models/trento"]
+	path = models/trento
+	url = https://github.com/Duke-QCD/trento.git
+[submodule "models/freestream"]
+	path = models/freestream
+	url = https://github.com/Duke-QCD/freestream.git
+[submodule "models/vishnew"]
+	path = models/vishnew
+	url = https://github.com/jbernhard/vishnew.git
+[submodule "models/frzout"]
+	path = models/frzout
+	url = https://github.com/jbernhard/frzout.git
+[submodule "models/urqmd-afterburner"]
+	path = models/urqmd-afterburner
+	url = https://github.com/jbernhard/urqmd-afterburner.git
