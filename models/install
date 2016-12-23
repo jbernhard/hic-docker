@@ -1,0 +1,46 @@
+#!/bin/bash
+
+arch=$1
+export CFLAGS="-march=$arch -ffast-math"
+export CXXFLAGS="$CFLAGS"
+export FFLAGS="$CFLAGS"
+
+builddir="build/$arch"
+root='/mnt'
+prefix='/usr/local'
+
+# build each model
+for i in */; do
+  pushd $i
+
+  # determine whether to build with cmake or python
+  if [[ -f CMakeLists.txt ]]; then
+    # create build directory and run cmake if necessary
+    if [[ -d $builddir ]]; then
+      cd $builddir
+    else
+      mkdir -p $builddir && cd $builddir
+      cmake \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=$prefix \
+        ../.. || exit 1
+    fi
+
+    make --jobs=$(nproc) DESTDIR=$root install || exit 1
+  elif [[ -f setup.py ]]; then
+    python3 setup.py \
+      build \
+        --build-base=$builddir \
+        --parallel=$(nproc) \
+      install \
+        --root=$root \
+      || exit 1
+  else
+    echo "unknown build system for model $i"
+    exit 1
+  fi
+
+  popd
+done
+
+install -Dv run-events $root/$prefix/bin

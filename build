@@ -1,0 +1,36 @@
+#!/bin/bash
+
+if (( $# != 1 )); then
+  echo "usage: $0 arch"
+  echo "where 'arch' is a valid cpu type for gcc option -march"
+  echo "https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html"
+  exit 1
+fi
+
+arch=$1
+image='jbernhard/hic'
+
+# build the 'base' and 'build' images
+for i in base build; do
+  sudo docker build --tag $image-$i dockerfiles/$i || exit 1
+done
+
+root='dockerfiles/run/root'
+[[ -d $root ]] || mkdir $root
+
+# run the install script inside the build container and output all the compiled
+# binaries, etc to the host directory $root
+sudo docker run \
+  --rm \
+  --tty \
+  --user $(id --user):$(id --group) \
+  --volume $(pwd)/models:/models \
+  --volume $(pwd)/$root:/mnt \
+  --workdir /models \
+  jbernhard/hic-build ./install $arch || exit 1
+
+# build the 'run' image, which copies in $root
+sudo docker build \
+  --tag $image:latest \
+  --tag $image:$arch-$(date +%Y%m%d) \
+  dockerfiles/run
